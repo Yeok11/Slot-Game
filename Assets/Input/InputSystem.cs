@@ -25,10 +25,7 @@ public class InputSystem : MonoBehaviour
         {
             var _clickObject = GetClickAbleUi();
 
-            Debug.Log(_clickObject);
-
             if (_clickObject != null) _clickObject.OnClickDown();
-
         }
     }
 

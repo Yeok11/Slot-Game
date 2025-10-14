@@ -6,12 +6,7 @@ public class BattleSystem : MonoBehaviour
 
     private void Start()
     {
-        slotMachine.SetInventory(GameData.Instance.playerInven);
-    }
-
-    private void OnDestroy()
-    {
-        
+        slotMachine.SetInventory(PlayerData.Instance.playerInven);
     }
 
     public void Roll()
