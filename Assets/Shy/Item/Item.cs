@@ -21,23 +21,5 @@ public class Item
 
     public ItemEffect[] GetEffects() => itemSO.itemEffects;
 
-    public void OnEffect()
-    {
-        foreach (var _effect in itemSO.itemEffects)
-        {
-            switch (_effect.condition)
-            {
-                case ItemCondition.None:
-                    break;
-                case ItemCondition.Use:
-                    break;
-                case ItemCondition.ItemCheck:
-                    break;
-                case ItemCondition.CategoryCheck:
-                    break;
-                case ItemCondition.Kill:
-                    break;
-            }
-        }
-    }
+    public int GetValue() => itemSO.defaultValue + fixedValue + tempValue;
 }

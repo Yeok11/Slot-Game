@@ -17,5 +17,6 @@ public class ItemSO : ScriptableObject
     public Sprite sprite;
 
     public int defaultValue;
+    public ActionType actionType;
     public ItemEffect[] itemEffects;
 }

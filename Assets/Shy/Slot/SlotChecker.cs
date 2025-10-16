@@ -19,7 +19,7 @@ public static class SlotChecker
     {
         result = result.Where(item => item.itemSO.category == _category).ToList();
 
-        if (_oneTimeCheck) result.RemoveRange(1, result.Count);
+        if (_oneTimeCheck) result.RemoveRange(1, result.Count - 1);
 
         return result.ToArray();
     }
@@ -31,7 +31,7 @@ public static class SlotChecker
         switch (_range)
         {
             case SlotRange.Row:
-                Row(_slot, 0, 5, _pos.y);
+                Row(_slot, 0, SlotMachine.Width, _pos.y);
                 break;
 
             case SlotRange.RowOne:
@@ -39,7 +39,7 @@ public static class SlotChecker
                 break;
 
             case SlotRange.Column:
-                Column(_slot, 0, 5, _pos.x);
+                Column(_slot, 0, SlotMachine.Height, _pos.x);
                 break;
 
             case SlotRange.ColumnOne:
@@ -47,8 +47,8 @@ public static class SlotChecker
                 break;
 
             case SlotRange.Cross:
-                Row(_slot, 0, 5, _pos.y);
-                Column(_slot, 0, 5, _pos.x);
+                Row(_slot, 0, SlotMachine.Width, _pos.y);
+                Column(_slot, 0, SlotMachine.Width, _pos.x);
                 break;
 
             case SlotRange.CrossOne:
@@ -77,7 +77,7 @@ public static class SlotChecker
                     int _loop = _slot[x].Length;
 
                     for (int y = 0; y < _loop; y++)
-                        result.Add(_slot[x][y]);
+                        CheckSlot(_slot[x][y]);
                 }
                 break;
         }
@@ -121,9 +121,9 @@ public static class SlotChecker
             maxY++;
 
             if (minX >= 0 && minY >= 0) CheckSlot(_slot[minX][minY]);
-            if (maxX < 5 && minY >= 0) CheckSlot(_slot[maxX][minY]);
-            if (minX >= 0 && maxY < 4) CheckSlot(_slot[minX][maxY]);
-            if (maxX < 5 && maxY < 4) CheckSlot(_slot[maxX][maxY]);
+            if (maxX < SlotMachine.Width && minY >= 0) CheckSlot(_slot[maxX][minY]);
+            if (minX >= 0 && maxY < SlotMachine.Height) CheckSlot(_slot[minX][maxY]);
+            if (maxX < SlotMachine.Width && maxY < SlotMachine.Height) CheckSlot(_slot[maxX][maxY]);
         }
     }
 }

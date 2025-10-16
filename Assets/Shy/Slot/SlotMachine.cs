@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
 public class SlotMachine : MonoBehaviour
 {
+    public const int Width = 5, Height = 4;
+
     [SerializeField] private Line[] lines;
     private int checkedCnt = 0;
 
@@ -16,8 +19,7 @@ public class SlotMachine : MonoBehaviour
     private List<Item> items, usedItems;
     private Dictionary<ItemCategory, List<Item>> usedItemDic;
 
-    private Item[] validItems;
-
+    public UnityAction<ActionValues> OnUseItems;
 
     private void Start()
     {
@@ -28,18 +30,18 @@ public class SlotMachine : MonoBehaviour
         emptyTiles = new();
         
         usedItemDic = new();
-        int _length = Enum.GetNames(typeof(ItemCategory)).Length;
-        for (int i = 0; i < _length; i++)
+        int _categoryLength = Enum.GetNames(typeof(ItemCategory)).Length;
+        for (int i = 0; i < _categoryLength; i++)
         {
             usedItemDic.Add((ItemCategory)i, new());
         }
 
         slotResult = new();
-        for (int x = 0; x < 5; x++)
+        for (int x = 0; x < Width; x++)
         {
             slotResult.Add(new Item[4]);
 
-            for (int y = 0; y < 4; y++)
+            for (int y = 0; y < Height; y++)
             {
                 emptyTiles.Add(new(x, y));
             }
@@ -49,7 +51,6 @@ public class SlotMachine : MonoBehaviour
     private void OnDestroy()
     {
         foreach (var _line in lines) _line.animeFin -= AnimeFinCheck;
-
         if (inventory != null) inventory.OnInventoryUpdate -= ItemsUpdate;
     }
 
@@ -63,13 +64,12 @@ public class SlotMachine : MonoBehaviour
     private void ItemsUpdate()
     {
         items = inventory.items.ToList();
-        usedItemDic.Clear();
+        usedItems.Clear();
     }
 
     public void Roll()
     {
         checkedCnt = 0;
-
         SetResult();
 
         for (int x = 0; x < lines.Length; x++)
@@ -92,7 +92,7 @@ public class SlotMachine : MonoBehaviour
         }
 
         // Check Items
-        while (usedItemDic.Count != 0)
+        while (usedItems.Count != 0)
         {
             items.Add(usedItems[0]);
             usedItems.RemoveAt(0);
@@ -134,9 +134,15 @@ public class SlotMachine : MonoBehaviour
         ExecuteItems();
     }
 
-    private void AddValueItem(Item _item)
+    private void AddValueItem(Item _item, ValueType _valueType, int _value)
     {
-
+        switch (_valueType)
+        {
+            case ValueType.FixedValue: _item.fixedValue += _value; break;
+            case ValueType.TempValue: _item.tempValue += _value; break;
+            case ValueType.CountValue: _item.count += _value; break;
+            case ValueType.DelayValue: _item.delay += _value; break;
+        }
     }
 
     private void ExecuteItems()
@@ -152,13 +158,13 @@ public class SlotMachine : MonoBehaviour
                 switch (_effect.condition)
                 {
                     case ItemCondition.None:
-                        AddValueItem(_item);
+                        AddValueItem(_item, _effect.valueType, _effect.value);
                         break;
 
                     case ItemCondition.Use:
                         if (_item.delay == 0)
                         {
-                            AddValueItem(_item);
+                            AddValueItem(_item, _effect.valueType, _effect.value);
                         }
                         break;
 
@@ -167,29 +173,47 @@ public class SlotMachine : MonoBehaviour
                     case ItemCondition.ItemCheckOneTime:
                     case ItemCondition.CategoryCheckOneTime:
                         SlotChecker.GetSlotsToRange(slotResult, _effect.Range, usedTiles[i], _effect.selfCheck);
+                        Item[] _validItems;
 
                         if (_effect.condition == ItemCondition.ItemCheck || _effect.condition == ItemCondition.ItemCheckOneTime)
                         {
-                            validItems = SlotChecker.GetSOCheck(_effect.checkSO, _effect.condition == ItemCondition.ItemCheckOneTime);
+                            _validItems = SlotChecker.GetSOCheck(_effect.checkSO, _effect.condition == ItemCondition.ItemCheckOneTime);
                         }
                         else
                         {
-                            validItems = SlotChecker.GetCategoryCheck(_effect.checkCategory, _effect.condition == ItemCondition.CategoryCheckOneTime);
+                            _validItems = SlotChecker.GetCategoryCheck(_effect.checkCategory, _effect.condition == ItemCondition.CategoryCheckOneTime);
                         }
 
-                        if (validItems.Length == 0) continue;
+                        int _validLength = _validItems.Length;
 
+                        switch (_effect.targetType)
+                        {
+                            case TargetType.Self:
+                                for (int j = 0; j < _validLength; j++)
+                                {
+                                    AddValueItem(_item, _effect.valueType, _effect.value);
+                                }
+                                break;
 
+                            case TargetType.CheckItems:
+                                for (int j = 0; j < _validLength; j++)
+                                {
+                                    AddValueItem(_validItems[j], _effect.valueType, _effect.value);
+                                }
+                                break;
+                        }
                         break;
                 }
             }
-
-            usedItems[i].OnEffect();
         }
 
-        // GetValues
-        for (int i = 0; i < usedItemDic.Count; i++)
+        ActionValues _actionValues = new();
+
+        foreach (var _item in usedItems)
         {
+            _actionValues.AddValue(_item.itemSO.actionType, _item.GetValue());
         }
+
+        OnUseItems?.Invoke(_actionValues);
     }
 }

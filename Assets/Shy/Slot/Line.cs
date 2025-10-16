@@ -70,7 +70,7 @@ public class Line : MonoBehaviour
             while (items.localPosition.y > -700)
             {
                 yield return new WaitForSeconds(0.01f);
-                items.localPosition += Vector3.down * 50;
+                items.localPosition += Vector3.down * 75;
             }
 
             if (!_slotChange)
