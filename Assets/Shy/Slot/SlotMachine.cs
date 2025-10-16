@@ -12,60 +12,45 @@ public class SlotMachine : MonoBehaviour
     [SerializeField] private Line[] lines;
     private int checkedCnt = 0;
 
-    private List<Item[]> slotResult;
-    private List<Vector2Int> emptyTiles, usedTiles;
+    private List<Item[]> slotResult = new();
+    private List<Vector2Int> emptyTiles = new(), usedTiles = new();
 
     private Inventory inventory;
-    private List<Item> items, usedItems;
-    private Dictionary<ItemCategory, List<Item>> usedItemDic;
+    private List<Item> items, usedItems = new();
+    private Dictionary<ItemCategory, List<Item>> usedItemDic = new();
+
+    private bool inventoryUpdate;
 
     public UnityAction<ActionValues> OnUseItems;
 
     private void Start()
     {
         foreach (var _line in lines) _line.animeFin += AnimeFinCheck;
-
-        usedTiles = new();
-        usedItems = new();
-        emptyTiles = new();
         
-        usedItemDic = new();
         int _categoryLength = Enum.GetNames(typeof(ItemCategory)).Length;
-        for (int i = 0; i < _categoryLength; i++)
-        {
-            usedItemDic.Add((ItemCategory)i, new());
-        }
+        for (int i = 0; i < _categoryLength; i++) usedItemDic.Add((ItemCategory)i, new());
 
-        slotResult = new();
         for (int x = 0; x < Width; x++)
         {
             slotResult.Add(new Item[4]);
-
-            for (int y = 0; y < Height; y++)
-            {
-                emptyTiles.Add(new(x, y));
-            }
+            for (int y = 0; y < Height; y++) emptyTiles.Add(new(x, y));
         }
     }
 
     private void OnDestroy()
     {
         foreach (var _line in lines) _line.animeFin -= AnimeFinCheck;
-        if (inventory != null) inventory.OnInventoryUpdate -= ItemsUpdate;
+        if (inventory != null) inventory.OnInventoryUpdate -= InventoryUpdate;
     }
 
     public void SetInventory(Inventory _inven)
     {
         inventory = _inven;
-        inventory.OnInventoryUpdate += ItemsUpdate;
-        ItemsUpdate();
+        inventory.OnInventoryUpdate += InventoryUpdate;
+        inventoryUpdate = true;
     }
 
-    private void ItemsUpdate()
-    {
-        items = inventory.items.ToList();
-        usedItems.Clear();
-    }
+    private void InventoryUpdate() => inventoryUpdate = true;
 
     public void Roll()
     {
@@ -81,6 +66,13 @@ public class SlotMachine : MonoBehaviour
 
     private void SetResult()
     {
+        if (inventoryUpdate)
+        {
+            items = inventory.items.ToList();
+            usedItems.Clear();
+            inventoryUpdate = false;
+        }
+
         // Check Tiles
         while (usedTiles.Count != 0)
         {
@@ -112,7 +104,6 @@ public class SlotMachine : MonoBehaviour
         while (items.Count != 0 && emptyTiles.Count != 0)
         {
             int _itemNum = Random.Range(0, items.Count), _tileNum = Random.Range(0, emptyTiles.Count);
-
             Vector2Int _pos = emptyTiles[_tileNum];
             var _item = items[_itemNum];
 
@@ -131,24 +122,18 @@ public class SlotMachine : MonoBehaviour
         if (--checkedCnt != 0) return;
 
         Debug.Log("All Lines Anime Finish");
-        ExecuteItems();
+
+        SequnceTool.Instance.Delay(ExcuteItems, 0.8f);
     }
 
-    private void AddValueItem(Item _item, ValueType _valueType, int _value)
-    {
-        switch (_valueType)
-        {
-            case ValueType.FixedValue: _item.fixedValue += _value; break;
-            case ValueType.TempValue: _item.tempValue += _value; break;
-            case ValueType.CountValue: _item.count += _value; break;
-            case ValueType.DelayValue: _item.delay += _value; break;
-        }
-    }
+    #region Excute Item
 
-    private void ExecuteItems()
+    private void ExcuteItems()
     {
+        int _useItemCnt = usedItems.Count;
+
         // OnEffect
-        for (int i = 0; i < usedItems.Count; i++)
+        for (int i = 0; i < _useItemCnt; i++)
         {
             var _item = usedItems[i];
             var _effects = _item.GetEffects();
@@ -158,13 +143,13 @@ public class SlotMachine : MonoBehaviour
                 switch (_effect.condition)
                 {
                     case ItemCondition.None:
-                        AddValueItem(_item, _effect.valueType, _effect.value);
+                        AddValueItem(_item, _effect, _item);
                         break;
 
                     case ItemCondition.Use:
                         if (_item.delay == 0)
                         {
-                            AddValueItem(_item, _effect.valueType, _effect.value);
+                            AddValueItem(_item, _effect, _item);
                         }
                         break;
 
@@ -172,39 +157,15 @@ public class SlotMachine : MonoBehaviour
                     case ItemCondition.CategoryCheck:
                     case ItemCondition.ItemCheckOneTime:
                     case ItemCondition.CategoryCheckOneTime:
-                        SlotChecker.GetSlotsToRange(slotResult, _effect.Range, usedTiles[i], _effect.selfCheck);
-                        Item[] _validItems;
-
-                        if (_effect.condition == ItemCondition.ItemCheck || _effect.condition == ItemCondition.ItemCheckOneTime)
-                        {
-                            _validItems = SlotChecker.GetSOCheck(_effect.checkSO, _effect.condition == ItemCondition.ItemCheckOneTime);
-                        }
-                        else
-                        {
-                            _validItems = SlotChecker.GetCategoryCheck(_effect.checkCategory, _effect.condition == ItemCondition.CategoryCheckOneTime);
-                        }
-
-                        int _validLength = _validItems.Length;
-
-                        switch (_effect.targetType)
-                        {
-                            case TargetType.Self:
-                                for (int j = 0; j < _validLength; j++)
-                                {
-                                    AddValueItem(_item, _effect.valueType, _effect.value);
-                                }
-                                break;
-
-                            case TargetType.CheckItems:
-                                for (int j = 0; j < _validLength; j++)
-                                {
-                                    AddValueItem(_validItems[j], _effect.valueType, _effect.value);
-                                }
-                                break;
-                        }
+                        CheckItemCondition(usedTiles[i], _item, _effect);
                         break;
                 }
             }
+        }
+
+        foreach (var item in usedItems)
+        {
+            item.UseAddValueDatas();
         }
 
         ActionValues _actionValues = new();
@@ -216,4 +177,48 @@ public class SlotMachine : MonoBehaviour
 
         OnUseItems?.Invoke(_actionValues);
     }
+
+    private void CheckItemCondition(Vector2Int _tilePos, Item _item, ItemEffect _effect)
+    {
+        SlotChecker.GetSlotsToRange(slotResult, _effect.Range, _tilePos, _effect.selfCheck);
+        bool _targetRemove = _effect.RemoveCheckItem;
+        Item[] _validItems;
+
+        if (_effect.condition == ItemCondition.ItemCheck || _effect.condition == ItemCondition.ItemCheckOneTime)
+        {
+            _validItems = SlotChecker.GetSOCheck(_effect.checkSO, _effect.condition == ItemCondition.ItemCheckOneTime);
+        }
+        else
+        {
+            _validItems = SlotChecker.GetCategoryCheck(_effect.checkCategory, _effect.condition == ItemCondition.CategoryCheckOneTime);
+        }
+
+        int _validLength = _validItems.Length;
+
+        switch (_effect.targetType)
+        {
+            case TargetType.Self:
+                for (int i = 0; i < _validLength; i++)
+                {
+                    AddValueItem(_item, _effect, _item);
+                    if (_targetRemove) inventory.RemoveItem(_validItems[i]);
+                }
+                break;
+
+            case TargetType.CheckItems:
+                for (int i = 0; i < _validLength; i++)
+                {
+                    AddValueItem(_item, _effect, _validItems[i]);
+                    if (_targetRemove) inventory.RemoveItem(_validItems[i]);
+                }
+                break;
+        }
+    }
+
+    private void AddValueItem(Item _castItem, ItemEffect _effectData, Item _targetItem)
+    {
+        _castItem.effectDatas.Add(new(_targetItem, _effectData.valueType, _effectData.value));
+    }
+
+    #endregion
 }

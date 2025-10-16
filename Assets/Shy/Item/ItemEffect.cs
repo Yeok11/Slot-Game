@@ -49,5 +49,5 @@ public class ItemEffect
     public int value;
     public ValueType valueType;
     public TargetType targetType;
-    public bool checkedRemove = false;
+    public bool RemoveCheckItem = false;
 }

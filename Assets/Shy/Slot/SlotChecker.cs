@@ -10,7 +10,7 @@ public static class SlotChecker
     {
         result = result.Where(item => item.itemSO == _so).ToList();
 
-        if (_oneTimeCheck) result.RemoveRange(1, result.Count);
+        if (result.Count > 1 && _oneTimeCheck) result.RemoveRange(1, result.Count);
 
         return result.ToArray();
     }
@@ -19,7 +19,7 @@ public static class SlotChecker
     {
         result = result.Where(item => item.itemSO.category == _category).ToList();
 
-        if (_oneTimeCheck) result.RemoveRange(1, result.Count - 1);
+        if (result.Count > 1 && _oneTimeCheck) result.RemoveRange(1, result.Count - 1);
 
         return result.ToArray();
     }

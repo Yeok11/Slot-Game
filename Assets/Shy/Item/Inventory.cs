@@ -18,8 +18,10 @@ public class Inventory
         OnInventoryUpdate?.Invoke();
     }
 
-    public void RemoveItem()
+    public void RemoveItem(Item _item)
     {
-
+        items.Remove(_item);
+        _item.isDelete = true;
+        OnInventoryUpdate?.Invoke();
     }
 }

@@ -28,5 +28,5 @@ MonoBehaviour:
     selfCheck: 0
     value: 3
     valueType: 1
-    targetType: 1
-    checkedRemove: 0
+    targetType: 0
+    RemoveCheckItem: 1

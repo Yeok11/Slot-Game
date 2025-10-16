@@ -15,10 +15,14 @@ public class SlotItem : MonoBehaviour, IClickEvent
         itemImage = transform.Find("Icon").GetComponent<Image>();
     }
 
-    public void InitData(Item _data)
+    public void InitData(Item _item)
     {
-        item = _data;
+        item = _item;
+
+        if (_item != null) _item.OnDeleteEvent += OffUis;
     }
+
+    private void OffUis() => UisActive(false);
 
     private void UisActive(bool _value)
     {

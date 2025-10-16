@@ -1,4 +1,31 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+
+public struct ItemEffectData
+{
+    public Item target;
+    public ValueType valueType;
+    public int value;
+
+    public ItemEffectData(Item _target, ValueType _type, int _value)
+    {
+        target = _target;
+        valueType = _type;
+        value = _value;
+    }
+
+    public void Use()
+    {
+        switch (valueType)
+        {
+            case ValueType.FixedValue: target.fixedValue += value; break;
+            case ValueType.TempValue: target.tempValue += value; break;
+            case ValueType.CountValue: target.count += value; break;
+            case ValueType.DelayValue: target.delay += value; break;
+        }
+    }
+}
 
 public class Item
 {
@@ -6,7 +33,11 @@ public class Item
     public int fixedValue = 0, tempValue = 0;
     public int count { get => Count; set => Count = Mathf.Max(0, value); }
     public int delay { get => Delay; set => Delay = Mathf.Max(0, value); }
+    public bool isDelete { private get; set; } = false;
 
+    public UnityAction OnDeleteEvent;
+
+    public List<ItemEffectData> effectDatas = new();
     private int Count, Delay;
 
     public Item(ItemSO _so)
@@ -21,5 +52,17 @@ public class Item
 
     public ItemEffect[] GetEffects() => itemSO.itemEffects;
 
-    public int GetValue() => itemSO.defaultValue + fixedValue + tempValue;
+    public void UseAddValueDatas()
+    {
+        if (isDelete)
+        {
+            OnDeleteEvent?.Invoke();
+            return;
+        }
+
+        foreach (var _data in effectDatas) _data.Use();
+        effectDatas.Clear();
+    }
+
+    public int GetValue() => (isDelete ? 0 : itemSO.defaultValue + fixedValue + tempValue);
 }
