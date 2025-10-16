@@ -18,5 +18,6 @@ public class ItemSO : ScriptableObject
 
     public int defaultValue;
     public ActionType actionType;
+    public bool lifeExist;
     public ItemEffect[] itemEffects;
 }

@@ -20,6 +20,7 @@ MonoBehaviour:
   sprite: {fileID: 21300000, guid: 4a2c8060e8639b64b92e646ff03e2c89, type: 3}
   defaultValue: 5
   actionType: 2
+  lifeExist: 0
   itemEffects:
   - condition: 5
     Range: 10
@@ -29,4 +30,4 @@ MonoBehaviour:
     value: 3
     valueType: 1
     targetType: 0
-    RemoveCheckItem: 1
+    RemoveCheckItem: 0

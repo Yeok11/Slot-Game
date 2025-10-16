@@ -61,8 +61,11 @@ public class Item
         }
 
         foreach (var _data in effectDatas) _data.Use();
+
         effectDatas.Clear();
     }
+
+    public bool LifeZeroCheck() => itemSO.lifeExist && count == 0; 
 
     public int GetValue() => (isDelete ? 0 : itemSO.defaultValue + fixedValue + tempValue);
 }

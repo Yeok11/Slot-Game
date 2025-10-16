@@ -173,6 +173,8 @@ public class SlotMachine : MonoBehaviour
         foreach (var _item in usedItems)
         {
             _actionValues.AddValue(_item.itemSO.actionType, _item.GetValue());
+
+            if (_item.LifeZeroCheck()) inventory.RemoveItem(_item);
         }
 
         OnUseItems?.Invoke(_actionValues);
