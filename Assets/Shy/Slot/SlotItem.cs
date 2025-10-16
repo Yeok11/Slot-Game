@@ -15,41 +15,31 @@ public class SlotItem : MonoBehaviour, IClickEvent
         itemImage = transform.Find("Icon").GetComponent<Image>();
     }
 
-    public void InitData(Item _item)
-    {
-        item = _item;
+    public void InitData(Item _item) => item = _item;
 
-        if (_item != null) _item.OnDeleteEvent += OffUis;
-    }
-
-    private void OffUis() => UisActive(false);
-
-    private void UisActive(bool _value)
-    {
-        itemImage.gameObject.SetActive(_value);
-        fixedValueTmp.gameObject.SetActive(_value);
-        tempValueTmp.gameObject.SetActive(_value);
-        cntTmp.gameObject.SetActive(_value);
-        delayTmp.gameObject.SetActive(_value);
-    }
+    private void TextUpdate(TextMeshProUGUI _tmp, int _value) => _tmp.SetText(_value == 0 ? "" : _value.ToString());
 
     public void ChangeVisual()
     {
-        bool _isNull = item == null;
+        bool _isNull = (item == null || item.isDelete);
+
+        itemImage.gameObject.SetActive(!_isNull);
 
         if (_isNull)
         {
-            UisActive(false);
+            cntTmp.SetText("");
+            delayTmp.SetText("");
+            fixedValueTmp.SetText("");
+            tempValueTmp.SetText("");
+            return;
         }
-        else
-        {
-            UisActive(true);
-            itemImage.sprite = item.itemSO.sprite;
-            cntTmp.SetText(item.count == 0 ? "" : item.count.ToString());
-            delayTmp.SetText(item.delay == 0 ? "" : item.delay.ToString());
-            fixedValueTmp.SetText(item.fixedValue == 0 ? "" : item.fixedValue.ToString());
-            tempValueTmp.SetText(item.tempValue == 0 ? "" : item.tempValue.ToString());
-        }
+
+        itemImage.sprite = item.itemSO.sprite;
+
+        TextUpdate(cntTmp, item.count);
+        TextUpdate(delayTmp, item.delay);
+        TextUpdate(fixedValueTmp, item.fixedValue);
+        TextUpdate(tempValueTmp, item.tempValue);
     }
 
     public void OnClickDown()

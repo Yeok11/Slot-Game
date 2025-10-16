@@ -16,10 +16,9 @@ public class SlotMachine : MonoBehaviour
     private List<Vector2Int> emptyTiles = new(), usedTiles = new();
 
     private Inventory inventory;
+    private bool inventoryUpdate;
     private List<Item> items, usedItems = new();
     private Dictionary<ItemCategory, List<Item>> usedItemDic = new();
-
-    private bool inventoryUpdate;
 
     public UnityAction<ActionValues> OnUseItems;
 
@@ -163,9 +162,15 @@ public class SlotMachine : MonoBehaviour
             }
         }
 
-        foreach (var item in usedItems)
+        foreach (var _item in usedItems)
         {
-            item.UseAddValueDatas();
+            _item.UseAddValueDatas();
+            if (_item.LifeZeroCheck()) inventory.RemoveItem(_item);
+        }
+
+        foreach (var _line in lines)
+        {
+            _line.ChangeSlot(4);
         }
 
         ActionValues _actionValues = new();
@@ -173,8 +178,7 @@ public class SlotMachine : MonoBehaviour
         foreach (var _item in usedItems)
         {
             _actionValues.AddValue(_item.itemSO.actionType, _item.GetValue());
-
-            if (_item.LifeZeroCheck()) inventory.RemoveItem(_item);
+            
         }
 
         OnUseItems?.Invoke(_actionValues);

@@ -21,11 +21,5 @@ public class BattleSystem : MonoBehaviour
     {
         userValues = _values;
         Debug.Log(userValues.physicalValue + " / " + userValues.magicalValue + " / " + userValues.shieldValue);
-        StartCoroutine(ActionDelay());
-    }
-
-    private IEnumerator ActionDelay()
-    {
-        yield return new WaitForSeconds(1);
     }
 }

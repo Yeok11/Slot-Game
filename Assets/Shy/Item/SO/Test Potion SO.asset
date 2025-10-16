@@ -16,7 +16,7 @@ MonoBehaviour:
   category: 3
   explain: This is Meat.
   sprite: {fileID: 21300000, guid: c0909b435e01c794faf95315bfce08e8, type: 3}
-  defaultValue: 3
+  defaultValue: 2
   actionType: 1
   lifeExist: 1
   itemEffects:

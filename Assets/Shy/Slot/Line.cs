@@ -21,7 +21,7 @@ public class Line : MonoBehaviour
         slotItems = items.GetComponentsInChildren<SlotItem>();
     }
 
-    private void ChangeSlot(int addY = 0)
+    public void ChangeSlot(int addY = 0)
     {
         for (int y = 0; y < 4; y++)
         {
@@ -39,6 +39,8 @@ public class Line : MonoBehaviour
             slotItems[y + 4].InitData(_isNull ? null : _datas[y]);
         }
     }
+
+    #region Roll Anime
 
     public void RollAnime(float _delay)
     {
@@ -86,4 +88,5 @@ public class Line : MonoBehaviour
 
         animeFin?.Invoke();
     }
+    #endregion
 }

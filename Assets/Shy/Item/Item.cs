@@ -33,9 +33,8 @@ public class Item
     public int fixedValue = 0, tempValue = 0;
     public int count { get => Count; set => Count = Mathf.Max(0, value); }
     public int delay { get => Delay; set => Delay = Mathf.Max(0, value); }
-    public bool isDelete { private get; set; } = false;
-
-    public UnityAction OnDeleteEvent;
+    
+    [HideInInspector] public bool isDelete = false;
 
     public List<ItemEffectData> effectDatas = new();
     private int Count, Delay;
@@ -54,11 +53,7 @@ public class Item
 
     public void UseAddValueDatas()
     {
-        if (isDelete)
-        {
-            OnDeleteEvent?.Invoke();
-            return;
-        }
+        if (isDelete) return;
 
         foreach (var _data in effectDatas) _data.Use();
 
