@@ -5,9 +5,7 @@ public enum ItemCondition
     None,
     Use,
     ItemCheck,
-    ItemCheckOneTime,
-    CategoryCheck,
-    CategoryCheckOneTime,
+    TypeCheck,
     Kill
 }
 
@@ -21,7 +19,7 @@ public enum SlotRange
     Round, All
 }
 
-public enum ValueType
+public enum ValueCategory
 {
     FixedValue,
     TempValue,
@@ -29,7 +27,7 @@ public enum ValueType
     DelayValue,
 }
 
-public enum TargetType
+public enum TargetCategory
 {
     Self,
     CheckItems
@@ -39,15 +37,16 @@ public enum TargetType
 public class ItemEffect
 {
     [Header("Condition")]
-    public ItemCondition condition;
+    public BaseConditionSO condition;
+    public bool oneTimeCheck = false;
     public SlotRange Range;
-    public ItemCategory checkCategory;
-    public ItemSO checkSO;
     public bool selfCheck = false;
 
     [Header("Result")]
     public int value;
-    public ValueType valueType;
-    public TargetType targetType;
+    public ValueCategory valueCategory;
+    public TargetCategory targetType;
     public bool RemoveCheckItem = false;
+
+    public Item[] GetItems() => condition.GetItems(oneTimeCheck);
 }

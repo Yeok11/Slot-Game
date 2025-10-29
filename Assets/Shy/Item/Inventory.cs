@@ -7,7 +7,7 @@ public class Inventory
 
     public UnityAction OnInventoryUpdate;
 
-    public void AddItem(ItemSO _itemSO)
+    public void AddItem(NormalItemSO _itemSO)
     {
         if (_itemSO == null) return;
 

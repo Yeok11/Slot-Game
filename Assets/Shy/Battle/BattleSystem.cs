@@ -1,10 +1,16 @@
-using System.Collections;
+using System;
 using UnityEngine;
 
 public class BattleSystem : MonoBehaviour
 {
     [SerializeField] private SlotMachine slotMachine;
     private ActionValues userValues;
+
+    private void Awake()
+    {
+        userValues = new();
+        userValues.Init();
+    }
 
     private void Start()
     {
@@ -20,6 +26,12 @@ public class BattleSystem : MonoBehaviour
     private void SetUserValues(ActionValues _values)
     {
         userValues = _values;
-        Debug.Log(userValues.physicalValue + " / " + userValues.magicalValue + " / " + userValues.shieldValue);
+
+#if UNITY_EDITOR
+        for (int i = 1; i < Enum.GetNames(typeof(ItemType)).Length; i++)
+        {
+            Debug.Log($"{(ItemType)i} Value : {userValues.GetValue((ItemType)i)}");
+        }
+#endif
     }
 }

@@ -5,5 +5,5 @@ using UnityEngine;
 public class UnitDataSO : ScriptableObject
 {
     public string unitName;
-    public List<ItemSO> defaultItems;
+    public List<NormalItemSO> defaultItems;
 }

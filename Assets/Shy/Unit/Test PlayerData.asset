@@ -15,5 +15,5 @@ MonoBehaviour:
   unitName: 
   defaultItems:
   - {fileID: 11400000, guid: 2466fb7fc6dddf941942a5734b8765f9, type: 2}
-  - {fileID: 11400000, guid: b5c5a9e16776d5746a5f79376ccdff80, type: 2}
-  - {fileID: 11400000, guid: b5c5a9e16776d5746a5f79376ccdff80, type: 2}
+  - {fileID: 11400000, guid: eddaef8b4cc1bbd4280d32719c05510f, type: 2}
+  - {fileID: 11400000, guid: eddaef8b4cc1bbd4280d32719c05510f, type: 2}

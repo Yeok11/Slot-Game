@@ -5,10 +5,10 @@ using UnityEngine.Events;
 public struct ItemEffectData
 {
     public Item target;
-    public ValueType valueType;
+    public ValueCategory valueType;
     public int value;
 
-    public ItemEffectData(Item _target, ValueType _type, int _value)
+    public ItemEffectData(Item _target, ValueCategory _type, int _value)
     {
         target = _target;
         valueType = _type;
@@ -19,33 +19,41 @@ public struct ItemEffectData
     {
         switch (valueType)
         {
-            case ValueType.FixedValue: target.fixedValue += value; break;
-            case ValueType.TempValue: target.tempValue += value; break;
-            case ValueType.CountValue: target.count += value; break;
-            case ValueType.DelayValue: target.delay += value; break;
+            case ValueCategory.FixedValue: target.fixedValue += value; break;
+            case ValueCategory.TempValue: target.tempValue += value; break;
+            case ValueCategory.CountValue: target.count += value; break;
+            case ValueCategory.DelayValue: target.delay += value; break;
         }
     }
 }
 
 public class Item
 {
-    public ItemSO itemSO { get; private set; }
+    public NormalItemSO itemSO { get; private set; }
     public int fixedValue = 0, tempValue = 0;
-    public int count { get => Count; set => Count = Mathf.Max(0, value); }
     public int delay { get => Delay; set => Delay = Mathf.Max(0, value); }
+    public int count { get => Count; 
+        set
+        {
+            Count = Mathf.Max(0, Mathf.Min(value, MaxCount));
+        }
+    }
+    private int Delay, Count, MaxCount = 99;
     
-    [HideInInspector] public bool isDelete = false;
+    public bool isDelete = false;
+    private bool isSupplyItem = false;
 
     public List<ItemEffectData> effectDatas = new();
-    private int Count, Delay;
 
-    public Item(ItemSO _so)
+    public Item(NormalItemSO _so)
     {
         itemSO = _so;
 
-        if (_so.category == ItemCategory.Supply)
+        if (_so is SupplyItemSO _supplyItem)
         {
-            count = _so.defaultValue;
+            isSupplyItem = true;
+            MaxCount = _supplyItem.maxLife;
+            count = _supplyItem.defaultLife;
         }
     }
 
@@ -60,7 +68,7 @@ public class Item
         effectDatas.Clear();
     }
 
-    public bool LifeZeroCheck() => itemSO.lifeExist && count == 0; 
+    public bool LifeZeroCheck() => isSupplyItem && count == 0; 
 
-    public int GetValue() => (isDelete ? 0 : itemSO.defaultValue + fixedValue + tempValue);
+    public int GetValue() => (isDelete ? 0 : itemSO.defaultValue.value + fixedValue + tempValue);
 }

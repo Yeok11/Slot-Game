@@ -12,22 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fba7a9cfa9ecba4a85fba9cfb6a1428, type: 3}
   m_Name: Test Magic SO
   m_EditorClassIdentifier: 
-  itemName: Magic
-  category: 3
-  explain: 'This is Magic.
-
-    When use it, it gets 1 delay.'
-  sprite: {fileID: 21300000, guid: 4a2c8060e8639b64b92e646ff03e2c89, type: 3}
-  defaultValue: 5
-  actionType: 2
-  lifeExist: 0
-  itemEffects:
-  - condition: 5
+  <dataName>k__BackingField: "\uD683\uBD88"
+  <dataSprite>k__BackingField: {fileID: 21300000, guid: 4a2c8060e8639b64b92e646ff03e2c89, type: 3}
+  <dataExplain>k__BackingField: "\uBD88 +n"
+  <defaultValue>k__BackingField:
+    <key>k__BackingField: n
+    <value>k__BackingField: 5
+    <valueTarget>k__BackingField: 0
+  itemType: 1
+  <itemEffects>k__BackingField:
+  - condition: {fileID: 11400000, guid: 3d90e7e2b4654e644be23cdeae54c45c, type: 2}
+    oneTimeCheck: 0
     Range: 10
-    checkCategory: 3
-    checkSO: {fileID: 0}
     selfCheck: 0
     value: 3
-    valueType: 1
+    valueCategory: 0
     targetType: 0
     RemoveCheckItem: 0
+  addValues: []
