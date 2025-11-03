@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fba7a9cfa9ecba4a85fba9cfb6a1428, type: 3}
+  m_Name: Test Farming SO
+  m_EditorClassIdentifier: 
+  <dataName>k__BackingField: "\uB18D\uC0AC"
+  <dataSprite>k__BackingField: {fileID: 21300000, guid: 748e13180e3b02c4e9187560f36e8ed8, type: 3}
+  <dataExplain>k__BackingField: "\uC2DD\uB7C9\uC744 default\uB9CC\uD07C \uC5BB\uC2B5\uB2C8\uB2E4.
+    \uC8FC\uBCC0 1\uCE78 \uB0B4\uC5D0 \uBC2D\uC774 \uC788\uB2E4\uBA74 \uBC2D\uC758
+    \uAC1C\uC218\uB9CC\uD07C 2\uC529 \uCD94\uAC00\uB85C \uC5BB\uC2B5\uB2C8\uB2E4."
+  <itemCategory>k__BackingField: 1
+  <itemValues>k__BackingField:
+  - <key>k__BackingField: default
+    <resourceType>k__BackingField: 1
+    value: 3
+    tempValue: 2
+  <itemEffects>k__BackingField:
+  - targetKey: default
+    condition: {fileID: 11400000, guid: c9663796eeb59694694fc00203e6175d, type: 2}
+    oneTimeCheck: 0
+    rangeType: 5
+    range: 1
+    selfCheck: 0
+    value: 2
+    valueCategory: 1
+    removeWay: 0

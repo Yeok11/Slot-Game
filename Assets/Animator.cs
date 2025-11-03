@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 public static class Animator
 {
-    private static List<IAnimeData> animeDatats = new();
-    public static void AddAnime(IAnimeData _animeData) => animeDatats.Add(_animeData);
+    private static List<IAnimeInfo> animeDatats = new();
+    public static void AddAnime(IAnimeInfo _animeData) => animeDatats.Add(_animeData);
 
 
-    public static Action<Action, List<IAnimeData>> EndAnime;
+    public static Action<Action, List<IAnimeInfo>> OnCallAnime;
     public static void CallAnime(Action _end)
     {
-        EndAnime?.Invoke(_end, animeDatats);
+        OnCallAnime?.Invoke(_end, animeDatats);
         animeDatats.Clear();
     }
 }

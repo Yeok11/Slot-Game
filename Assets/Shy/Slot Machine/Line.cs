@@ -1,11 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
+using Random = UnityEngine.Random;
 
 public class Line : MonoBehaviour
 {
-    public UnityAction animeFin;
+    public Action AnimeFin;
     
     private Transform itemsGroup;
     private List<SlotItem> slotItems = new();
@@ -15,17 +16,23 @@ public class Line : MonoBehaviour
         itemsGroup = transform.Find("Item Group");
     }
 
-    public void InitBySlotMachine(SlotItem _slotPrefab, UnityAction _animeFin)
+    public void SettingSlotMachine(SlotItem _slotPrefab)
     {
-        animeFin += _animeFin;
-
         if (itemsGroup == null)
         {
             Debug.LogError("Can not Found Items Group");
             return;
         }
 
-        if (itemsGroup.childCount != 0 )
+        ClearSlots();
+        CreateSlots(_slotPrefab);
+    }
+
+    #region Setting SlotMachine's Method
+
+    private void ClearSlots()
+    {
+        if (itemsGroup.childCount != 0)
         {
             int _loop = itemsGroup.childCount;
             for (int i = 0; i < _loop; i++)
@@ -33,11 +40,13 @@ public class Line : MonoBehaviour
                 Destroy(itemsGroup.GetChild(0).gameObject);
             }
         }
+    }
 
+    private void CreateSlots(SlotItem _slotPrefab)
+    {
         slotItems.Clear();
 
         Vector2 _size = new Vector2(700, 700 / SlotMachine.Height);
-
         for (int i = 0; i < SlotMachine.Height * 2; i++)
         {
             SlotItem _item = Instantiate(_slotPrefab, itemsGroup);
@@ -47,15 +56,9 @@ public class Line : MonoBehaviour
         }
     }
 
-    public void ChangeSlot(int addY = 0)
-    {
-        for (int y = 0; y < SlotMachine.Height; y++)
-        {
-            slotItems[y + addY].ChangeVisual();
-        }
-    }
+    #endregion
 
-    public void SlotInit(Item[] _datas)
+    public void InitSlots(Item[] _datas)
     {
         bool _isNull = (_datas == null);
 
@@ -66,17 +69,23 @@ public class Line : MonoBehaviour
         }
     }
 
+    public void UpdateSlotVisual(int addY = 0)
+    {
+        for (int y = 0; y < SlotMachine.Height; y++)
+        {
+            slotItems[y + addY].ChangeVisual();
+        }
+    }
+
     #region Roll Anime
 
-    public void RollAnime(float _delay)
-    {
-        StartCoroutine(Anime(_delay));
-    }
+    public void RollAnime(float _delay) => StartCoroutine(Anime(_delay));
 
     private IEnumerator Anime(float _beginDelay)
     {
         yield return new WaitForSeconds(_beginDelay);
 
+        // 올라갔다 내려가기
         for (int i = 0; i < SlotMachine.Height; i++)
         {
             itemsGroup.localPosition += Vector3.up * 15;
@@ -89,10 +98,11 @@ public class Line : MonoBehaviour
             yield return new WaitForSeconds(0.05f);
         }
 
-        ChangeSlot();
+        UpdateSlotVisual();
 
         bool _slotChange = false;
 
+        // Start Spin Anime
         for (int i = 0; i < 15; i++)
         {
             while (itemsGroup.localPosition.y > -700)
@@ -104,7 +114,7 @@ public class Line : MonoBehaviour
             if (!_slotChange)
             {
                 _slotChange = true;
-                ChangeSlot(SlotMachine.Height);
+                UpdateSlotVisual(SlotMachine.Height);
             }
 
             Vector3 _localPos = itemsGroup.localPosition;
@@ -112,7 +122,8 @@ public class Line : MonoBehaviour
             itemsGroup.localPosition = _localPos;
         }
 
-        animeFin?.Invoke();
+        AnimeFin?.Invoke();
     }
+
     #endregion
 }

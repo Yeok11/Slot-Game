@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 663ed0b2f1335834c8d63bd88ff23b56, type: 3}
   m_Name: CSO-Item-Null
   m_EditorClassIdentifier: 
-  <itemCondition>k__BackingField: 0
-  checkItem: {fileID: 0}
+  <itemCondition>k__BackingField: 2
+  <checkItem>k__BackingField: {fileID: 0}

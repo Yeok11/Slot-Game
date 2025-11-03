@@ -5,12 +5,14 @@ using TMPro;
 public class SlotItem : MonoBehaviour, IClickEvent
 {
     private Image itemImage;
-    private Item item;
+    private Item itemData;
 
     [HideInInspector] public RectTransform rectTrm;
 
     [SerializeField] private TextMeshProUGUI fixedValueTmp, tempValueTmp;
     [SerializeField] private TextMeshProUGUI cntTmp, delayTmp;
+
+    //[SerializeField] private ItemValue itemValue;
 
     private void Awake()
     {
@@ -18,15 +20,16 @@ public class SlotItem : MonoBehaviour, IClickEvent
         rectTrm = GetComponent<RectTransform>();
     }
 
-    public void InitData(Item _item) => item = _item;
+    public void InitData(Item _item) => itemData = _item;
 
     private void TextUpdate(TextMeshProUGUI _tmp, int _value) => _tmp.SetText(_value == 0 ? "" : _value.ToString());
 
     public void ChangeVisual()
     {
-        bool _isNull = (item == null || item.isDelete);
+        bool _isNull = (itemData == null || itemData.isDelete);
 
         itemImage.gameObject.SetActive(!_isNull);
+        //itemValue.gameObject.SetActive(false);
 
         if (_isNull)
         {
@@ -37,12 +40,12 @@ public class SlotItem : MonoBehaviour, IClickEvent
             return;
         }
 
-        itemImage.sprite = item.itemSO.dataSprite;
+        itemImage.sprite = itemData.itemSO.dataSprite;
 
-        TextUpdate(cntTmp, item.count);
-        TextUpdate(delayTmp, item.delay);
-        TextUpdate(fixedValueTmp, item.fixedValue);
-        TextUpdate(tempValueTmp, item.tempValue);
+        TextUpdate(cntTmp, itemData.count);
+        TextUpdate(delayTmp, itemData.delay);
+        //TextUpdate(fixedValueTmp, itemData.fixedValue);
+        //TextUpdate(tempValueTmp, itemData.tempValue);
     }
 
     public void OnClickDown()

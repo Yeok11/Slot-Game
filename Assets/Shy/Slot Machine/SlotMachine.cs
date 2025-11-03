@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
 public class SlotMachine : MonoBehaviour
@@ -13,34 +12,34 @@ public class SlotMachine : MonoBehaviour
     [SerializeField] private SlotItem slotItemPrefab;
     private int checkedCnt = 0;
 
-    private List<Item[]> slotResult = new();
-    private List<Vector2Int> emptyTiles = new(), usedTiles = new();
-
     private Inventory inventory;
     private bool inventoryUpdate;
-    private List<Item> items, usedItems = new();
-    private Dictionary<ItemType, List<Item>> usedItemDic = new();
 
-    public UnityAction<ActionValues> OnUseItems;
+    private readonly List<Item[]> slotResult = new();
+    private List<Vector2Int> emptyTiles = new(), usedTiles = new();
+    private List<Item> items = new(), usedItems = new();
+    private Dictionary<ResourceType, List<Vector2Int>> usedItemDic = new();
 
     private void Start()
     {
         foreach (var _line in lines)
         {
-            _line.InitBySlotMachine(slotItemPrefab, AnimeFinCheck);
-            _line.animeFin += AnimeFinCheck;
+            _line.SettingSlotMachine(slotItemPrefab);
+            _line.AnimeFin += SlotAnimeFinCheck;
         }
-        
-        int _categoryLength = Enum.GetNames(typeof(ItemType)).Length;
-        for (int i = 0; i < _categoryLength; i++)
+
+        foreach (ResourceType _category in Enum.GetValues(typeof(ResourceType)))
         {
-            usedItemDic.Add((ItemType)i, new());
+            usedItemDic.Add(_category, new());
         }
 
         for (int x = 0; x < Width; x++)
         {
             slotResult.Add(new Item[Height]);
-            for (int y = 0; y < Height; y++) emptyTiles.Add(new(x, y));
+            for (int y = 0; y < Height; y++)
+            {
+                emptyTiles.Add(new(x, y));
+            }
         }
     }
 
@@ -48,11 +47,13 @@ public class SlotMachine : MonoBehaviour
     {
         foreach (var _line in lines)
         {
-            _line.animeFin -= AnimeFinCheck;
+            _line.AnimeFin -= SlotAnimeFinCheck;
         }
 
         if (inventory != null) inventory.OnInventoryUpdate -= InventoryUpdate;
     }
+
+    #region Inventory
 
     private void InventoryUpdate() => inventoryUpdate = true;
 
@@ -63,72 +64,87 @@ public class SlotMachine : MonoBehaviour
         inventoryUpdate = true;
     }
 
+    #endregion
+
+    // 외부 Button에서 동작
     public void Roll()
     {
-        checkedCnt = 0;
-        SetResult();
+        checkedCnt = lines.Length;
+        SettingSlots();
 
         for (int x = 0; x < lines.Length; x++)
         {
-            lines[x].SlotInit(slotResult[x]);
-            lines[x].RollAnime(checkedCnt++ * 0.3f);
+            lines[x].InitSlots(slotResult[x]);
+            lines[x].RollAnime(0.3f * x);
         }
     }
 
-    private void SetResult()
+    private void SettingSlots()
     {
-        if (inventoryUpdate)
+        if (inventoryUpdate) InitInventory();
+        InitTilesAndItems();
+        InitDictionaryAndArray();
+        SettingItemsInSlot();
+    }
+
+    #region Setting Slots' Method
+
+    private void InitInventory()
+    {
+        items = inventory.items.ToList();
+        usedItems.Clear();
+        inventoryUpdate = false;
+    }
+
+    private void InitTilesAndItems()
+    {
+        // Init Tiles
+        emptyTiles.AddRange(usedTiles);
+        usedTiles.Clear();
+
+        foreach (Vector2Int _pos in emptyTiles)
         {
-            items = inventory.items.ToList();
-            usedItems.Clear();
-            inventoryUpdate = false;
+            lines[_pos.x].InitSlots(null);
         }
 
-        // Check Tiles
-        while (usedTiles.Count != 0)
-        {
-            Vector2Int _pos = usedTiles[0];
-            lines[_pos.x].SlotInit(null);
+        // Init Items
+        usedItems.AddRange(items);
+        items.Clear();
+    }
 
-            emptyTiles.Add(_pos);
-            usedTiles.RemoveAt(0);
-        }
-
-        // Check Items
-        while (usedItems.Count != 0)
-        {
-            items.Add(usedItems[0]);
-            usedItems.RemoveAt(0);
-        }
-
+    private void InitDictionaryAndArray()
+    {
         for (int i = 0; i < usedItemDic.Count; i++)
         {
-            if (usedItemDic[(ItemType)i].Count != 0) usedItemDic[(ItemType)i].Clear();
+            if (usedItemDic[(ResourceType)i].Count != 0) usedItemDic[(ResourceType)i].Clear();
         }
 
         for (int i = 0; i < slotResult.Count; i++)
         {
             Array.Clear(slotResult[i], 0, slotResult[i].Length);
         }
+    }
 
-        // Add
+    private void SettingItemsInSlot()
+    {
         while (items.Count != 0 && emptyTiles.Count != 0)
         {
-            int _itemNum = Random.Range(0, items.Count), _tileNum = Random.Range(0, emptyTiles.Count);
-            Vector2Int _pos = emptyTiles[_tileNum];
-            Item _item = items[_itemNum];
+            int _itemIdx = Random.Range(0, items.Count), _tileIdx = Random.Range(0, emptyTiles.Count);
+            Vector2Int _pos = emptyTiles[_tileIdx];
+            Item _item = items[_itemIdx];
 
             slotResult[_pos.x][_pos.y] = _item;
-            usedItemDic[_item.itemSO.itemType].Add(_item);
             usedItems.Add(_item);
             usedTiles.Add(_pos);
 
-            items.RemoveAt(_itemNum);
-            emptyTiles.RemoveAt(_tileNum);
+            items.RemoveAt(_itemIdx);
+            emptyTiles.RemoveAt(_tileIdx);
         }
     }
 
-    private void AnimeFinCheck()
+    #endregion
+
+    private void SlotAnimeFinCheck()
     {
         if (--checkedCnt != 0) return;
 
@@ -136,13 +152,33 @@ public class SlotMachine : MonoBehaviour
         SequnceTool.Instance.Delay(ExcuteItems, 1.5f);
     }
 
-    #region Excute Item
-
     private void ExcuteItems()
     {
         int _useItemCnt = usedItems.Count;
 
-        // OnEffect
+        ApplyItemEffects(_useItemCnt);
+
+        // Visual Update
+        foreach (Line _line in lines)
+        {
+            _line.UpdateSlotVisual(Height);
+        }
+
+        DivideToResourceDic(_useItemCnt);
+
+        foreach (var item in usedItemDic)
+        {
+
+        }
+
+        Debug.Log("Total End");
+    }
+
+    #region Item Effect
+
+    private void ApplyItemEffects(int _useItemCnt)
+    {
+        // Subscribe Effect
         for (int i = 0; i < _useItemCnt; i++)
         {
             Item _item = usedItems[i];
@@ -153,77 +189,82 @@ public class SlotMachine : MonoBehaviour
                 switch (_effect.condition.itemCondition)
                 {
                     case ItemCondition.None:
-                        AddValueItem(_item, _effect, _item);
+                        SubscribeItemEffect(_item, _effect, _item);
                         break;
 
                     case ItemCondition.Use:
-                        if (_item.delay == 0)
-                        {
-                            AddValueItem(_item, _effect, _item);
-                        }
+                        if (_item.delay == 0) SubscribeItemEffect(_item, _effect, _item);
                         break;
 
                     case ItemCondition.ItemCheck:
-                    case ItemCondition.TypeCheck:
+                    case ItemCondition.CategoryCheck:
                         CheckItemCondition(usedTiles[i], _item, _effect);
                         break;
                 }
             }
         }
 
-        foreach (var _item in usedItems)
+        // Apply Effect
+        foreach (Item _item in usedItems)
         {
             _item.UseAddValueDatas();
             if (_item.LifeZeroCheck()) inventory.RemoveItem(_item);
         }
-
-        foreach (var _line in lines)
-        {
-            _line.ChangeSlot(Height);
-        }
-
-        ActionValues _actionValues = new();
-
-        foreach (var _item in usedItems)
-        {
-            _actionValues.AddValue(_item.itemSO.itemType, _item.GetValue());
-        }
-
-        OnUseItems?.Invoke(_actionValues);
     }
 
     private void CheckItemCondition(Vector2Int _tilePos, Item _item, ItemEffect _effect)
     {
-        SlotChecker.SetSlotsInRange(slotResult, _effect.Range, _tilePos, _effect.selfCheck);
+        ConditionChecker.SetSlotsInRange(slotResult, _effect.rangeType, _effect.range, _tilePos, _effect.selfCheck);
         
-        bool _targetRemove = _effect.RemoveCheckItem;
         Item[] _validItems = _effect.GetItems();
         int _validLength = _validItems.Length;
 
-        switch (_effect.targetType)
+        for (int i = 0; i < _validLength; i++)
         {
-            case TargetCategory.Self:
-                for (int i = 0; i < _validLength; i++)
-                {
-                    AddValueItem(_item, _effect, _item);
-                    if (_targetRemove) inventory.RemoveItem(_validItems[i]);
-                }
-                break;
+            switch (_effect.removeWay)
+            {
+                case RemoveWay.None:
+                    SubscribeItemEffect(_item, _effect, _item);
+                    break;
 
-            case TargetCategory.CheckItems:
-                for (int i = 0; i < _validLength; i++)
-                {
-                    AddValueItem(_item, _effect, _validItems[i]);
-                    if (_targetRemove) inventory.RemoveItem(_validItems[i]);
-                }
-                break;
+                case RemoveWay.SelfRemove:
+                    SubscribeItemEffect(_validItems[i], _effect, _validItems[i]);
+                    inventory.RemoveItem(_item);
+                    break;
+
+                case RemoveWay.CheckItemsRemove:
+                    SubscribeItemEffect(_item, _effect, _item);
+                    inventory.RemoveItem(_validItems[i]);
+                    break;
+
+                case RemoveWay.AllRemove:
+                    inventory.RemoveItem(_item);
+                    inventory.RemoveItem(_validItems[i]);
+                    break;
+            }
         }
     }
 
-    private void AddValueItem(Item _castItem, ItemEffect _effectData, Item _targetItem)
+    private void SubscribeItemEffect(Item _castItem, ItemEffect _effect, Item _targetItem)
     {
-        _castItem.effectDatas.Add(new(_targetItem, _effectData.valueCategory, _effectData.value));
+        _castItem.effectDatas.Add(new ItemEffectData(_targetItem, _effect));
     }
 
     #endregion
+
+    private void DivideToResourceDic(int _useItemCnt)
+    {
+        for (int i = 0; i < _useItemCnt; i++)
+        {
+            if (usedItems[i].delay != 0 || usedItems[i].isDelete) continue;
+
+            ValueInfo[] _values = usedItems[i].GetValueInfos();
+
+            foreach (ValueInfo _valueInfo in _values)
+            {
+                if (_valueInfo.value + _valueInfo.tempValue == 0) break;
+                usedItemDic[_valueInfo.resourceType].Add(usedTiles[i]);
+            }
+        }
+    }
 }

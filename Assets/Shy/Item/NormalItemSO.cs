@@ -4,8 +4,7 @@ using UnityEngine;
 public class NormalItemSO : BaseDataSO
 {
     [Header("Effect")]
-    [field: SerializeField] public ItemValue defaultValue { get; private set; }
-    public ItemType itemType;
+    [field: SerializeField] public ItemCategory itemCategory { get; private set; } = ItemCategory.None;
+    [field: SerializeField] public ValueInfo[] itemValues { get; private set; }
     [field: SerializeField] public ItemEffect[] itemEffects { get; private set; }
-    public ItemValue[] addValues;
 }

@@ -20,6 +20,8 @@ public class Inventory
 
     public void RemoveItem(Item _item)
     {
+        if (!items.Contains(_item)) return;
+
         items.Remove(_item);
         _item.isDelete = true;
         OnInventoryUpdate?.Invoke();

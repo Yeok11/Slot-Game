@@ -9,7 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ed9cb5ad25b1f64cbc69f233ea79cb1, type: 3}
-  m_Name: CSO-Use
+  m_Script: {fileID: 11500000, guid: 663ed0b2f1335834c8d63bd88ff23b56, type: 3}
+  m_Name: CSO-Item-Field
   m_EditorClassIdentifier: 
-  <itemCondition>k__BackingField: 1
+  <itemCondition>k__BackingField: 2
+  <checkItem>k__BackingField: {fileID: 11400000, guid: 2466fb7fc6dddf941942a5734b8765f9, type: 2}

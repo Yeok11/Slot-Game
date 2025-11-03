@@ -5,5 +5,5 @@ public class ItemCheckCSO : BaseConditionSO
 {
     [field: SerializeField] public NormalItemSO checkItem { get; private set; }
 
-    public override Item[] GetItems(bool _oneTimeCheck) => SlotChecker.GetItemSOCheck(checkItem, _oneTimeCheck);
+    public override Item[] GetItems(bool _oneTimeCheck) => ConditionChecker.GetItemSOCheck(checkItem, _oneTimeCheck);
 }

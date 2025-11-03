@@ -1,53 +1,30 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
-
-public struct ItemEffectData
-{
-    public Item target;
-    public ValueCategory valueType;
-    public int value;
-
-    public ItemEffectData(Item _target, ValueCategory _type, int _value)
-    {
-        target = _target;
-        valueType = _type;
-        value = _value;
-    }
-
-    public void Use()
-    {
-        switch (valueType)
-        {
-            case ValueCategory.FixedValue: target.fixedValue += value; break;
-            case ValueCategory.TempValue: target.tempValue += value; break;
-            case ValueCategory.CountValue: target.count += value; break;
-            case ValueCategory.DelayValue: target.delay += value; break;
-        }
-    }
-}
 
 public class Item
 {
     public NormalItemSO itemSO { get; private set; }
-    public int fixedValue = 0, tempValue = 0;
+
+    // Value
+    private ValueInfo[] valueInfos;
+ 
     public int delay { get => Delay; set => Delay = Mathf.Max(0, value); }
-    public int count { get => Count; 
-        set
-        {
-            Count = Mathf.Max(0, Mathf.Min(value, MaxCount));
-        }
-    }
+    public int count { get => Count; set => Count = Mathf.Max(0, Mathf.Min(value, MaxCount));}
     private int Delay, Count, MaxCount = 99;
     
+    // State
     public bool isDelete = false;
     private bool isSupplyItem = false;
 
+    // Method variable
     public List<ItemEffectData> effectDatas = new();
+    private ResourceType[] resourceTypes;
 
     public Item(NormalItemSO _so)
     {
         itemSO = _so;
+        valueInfos = _so.itemValues.ToArray();
 
         if (_so is SupplyItemSO _supplyItem)
         {
@@ -57,18 +34,39 @@ public class Item
         }
     }
 
+    public bool LifeZeroCheck() => isSupplyItem && count == 0;
+
     public ItemEffect[] GetEffects() => itemSO.itemEffects;
+
+    public ValueInfo[] GetValueInfos() => itemSO.itemValues;
+
+    public void Init()
+    {
+        int _loop = valueInfos.Length;
+        for (int i = 0; i < _loop; i++)
+        {
+            valueInfos[i].tempValue = 0;
+        }
+    }
 
     public void UseAddValueDatas()
     {
         if (isDelete) return;
 
-        foreach (var _data in effectDatas) _data.Use();
+        foreach (ItemEffectData _data in effectDatas)
+        {
+            _data.Use();
+        }
 
         effectDatas.Clear();
     }
 
-    public bool LifeZeroCheck() => isSupplyItem && count == 0; 
-
-    public int GetValue() => (isDelete ? 0 : itemSO.defaultValue.value + fixedValue + tempValue);
+    public bool EffectResourceCheck(ResourceType food)
+    {
+        foreach (ValueInfo _valueInfo in itemSO.itemValues)
+        {
+            if (_valueInfo.resourceType == food) return true;
+        }
+        return false;
+    }
 }
